@@ -99,7 +99,15 @@ def search_funnel():
         "query": {
             "bool": {
                 "must": [
-                    {"range": {"@timestamp": {"gte": start_date, "lte": end_date}}}
+                    {
+                        "range": {
+                            "@timestamp": {
+                                "gte": start_date.strftime("%Y-%m-%d") + "T00:00:00",
+                                "lt": end_date.strftime("%Y-%m-%d") + "T23:59:59",
+                                "time_zone": "+08:00",  # 设置中国时区
+                            }
+                        }
+                    },
                 ]
             }
         },
