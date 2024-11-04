@@ -3,6 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from elasticsearch import Elasticsearch
+import pytz
+
+
+timezone = pytz.timezone("Asia/Shanghai")
 
 # Elasticsearch client
 client = Elasticsearch(hosts=st.secrets["es"]["url"], api_key=st.secrets["es"]["key"])
@@ -42,7 +46,7 @@ def calculate_retention(interval_days):
     retention_rates = []
     dates = []
     for i in range(1, 15):
-        day = datetime.now() - timedelta(days=i + interval_days - 1)
+        day = datetime.now(timezone) - timedelta(days=i + interval_days - 1)
         next_day = day + timedelta(days=interval_days)
 
         # Format dates
@@ -79,7 +83,7 @@ def calculate_retention(interval_days):
 
 @st.cache_data(ttl=3600)
 def search_funnel():
-    end_date = datetime.now() - timedelta(days=1)
+    end_date = datetime.now(timezone) - timedelta(days=1)
     start_date = end_date - timedelta(days=14 - 1)
     # 定义查询
     query = {
@@ -222,7 +226,7 @@ ax.set_xlabel("Date")
 ax.set_ylabel("Count")
 ax.set_title("User Metrics Over Time")
 ax.legend()
-plt.xticks(rotation=45, ha='right', rotation_mode='anchor')
+plt.xticks(rotation=45, ha="right", rotation_mode="anchor")
 plt.tight_layout()
 
 st.pyplot(fig)
@@ -260,6 +264,6 @@ for x, y in zip(df["Date"], df["Retention Rate"]):
 # Labeling the chart
 ax.set_xlabel("Date")
 ax.set_ylabel("Retention Rate")
-plt.xticks(rotation=45, ha='right', rotation_mode='anchor')
+plt.xticks(rotation=45, ha="right", rotation_mode="anchor")
 
 st.pyplot(fig)
