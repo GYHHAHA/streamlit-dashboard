@@ -21,7 +21,15 @@ def get_unique_user_ids(date, message_name):
             "query": {
                 "bool": {
                     "must": [
-                        {"term": {"@timestamp": date}},
+                        {
+                            "range": {
+                                "@timestamp": {
+                                    "gte": date + "T00:00:00",
+                                    "lt": date + "T23:59:59",
+                                    "time_zone": "+08:00",  # 设置中国时区
+                                }
+                            }
+                        },
                         {"term": {"message.name.keyword": message_name}},
                     ]
                 }
@@ -100,6 +108,7 @@ def search_funnel():
                 "date_histogram": {
                     "field": "@timestamp",
                     "calendar_interval": "day",
+                    "time_zone": "+08:00",
                 },
                 "aggs": {
                     "userId_all": {
