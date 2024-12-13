@@ -30,7 +30,11 @@ def get_unique_user_ids(date, message_name):
                                 }
                             }
                         },
-                        {"term": {"message.name.keyword": message_name}},
+                        (
+                            {"term": {"message.name.keyword": message_name}}
+                            if isinstance(message_name, str)
+                            else {"terms": {"message.name.keyword": message_name}}
+                        ),
                     ]
                 }
             },
@@ -63,7 +67,14 @@ def calculate_retention(interval_days):
         dates.append(day_str)
 
         # Get user IDs for 'sign_up' on the specific day and 'root' on the day after the interval
-        unique_userIds = get_unique_user_ids(day_str, "backend-sign_up")
+        unique_userIds = get_unique_user_ids(
+            day_str,
+            [
+                "backend-phone_sign_up",
+                "backend-wx_sign_up",
+                "backend-sign_up",
+            ],
+        )
         unique_userIds_after_interval = get_unique_user_ids(next_day_str, "root")
 
         rentention_count.append(
@@ -136,7 +147,15 @@ def search_funnel():
                         },
                     },
                     "new_sign_up": {
-                        "filter": {"term": {"message.name.keyword": "backend-sign_up"}},
+                        "filter": {
+                            "terms": {
+                                "message.name.keyword": [
+                                    "backend-phone_sign_up",
+                                    "backend-wx_sign_up",
+                                    "backend-sign_up",
+                                ]
+                            }
+                        },
                         "aggs": {
                             "unique_visitorId": {
                                 "cardinality": {"field": "message.userId"}
